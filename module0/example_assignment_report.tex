@@ -1,0 +1,90 @@
+\documentclass[11pt,twoside,a4paper]{article}
+\usepackage[english]{babel} %English hyphenation
+\usepackage{amsmath} %Mathematical stuff
+\usepackage{amsthm}
+\usepackage{amssymb}
+
+%Hyperreferences in the document. (e.g. \ref is clickable)
+\usepackage{hyperref}
+
+%Pseudocode
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+%You can also use the pseudocode package. http://cacr.uwaterloo.ca/~dstinson/papers/pseudocode.pdf
+%\usepackage{pseudocode}
+
+\usepackage{a4wide,times}
+\title{LaTEX Introduction Assignment} %The title, e.g. Algoritmiek Assignment 1
+\author{
+	Vlad Paun, vpaun, xxxxxxx %Change the author info, Name, netID(, studentnr.)
+}
+\begin{document}
+\maketitle
+\clearpage
+
+%It is possible to automatically generate a Table of Contents or a Table of Algorithms and more.
+\tableofcontents
+\listofalgorithms
+
+\section{Section A} \label{sec:sectionA} %A label can be used to refer to an algorithm, an image, a section, etc.
+	Welcome to \LaTeX, the proper way to write a scientific report.	If you're new to this, you can install one of the following LaTeX distributions for your OS: MikTex (windows), MacTex (Mac), TexLive (Linux). I suggest you use an editor such as TexStudio\footnote{TexStudio website: \url{http://texstudio.sourceforge.net/}} to start off. You can copy this example report and edit it to fit your needs, feel free to experiment. I've included a few examples that I think may be useful for your Algoritmiek assignments and you can also find some comments in the TeX code.
+
+	A good manual for LaTeX can be found on \href{http://en.wikibooks.org/wiki/LaTeX}{WikiBooks}. I'm sure you can find answers to most questions through Google.
+
+	\subsection{Subsection 1}
+		Hello what's up, this is Section A\ref{sec:sectionA}. And here is some math: $ a_1 = \infty $
+
+\section{Pseudocode}
+	Explain in general here what you're doing. Define your variables.
+	We use the variable $L$ to store the input list of variables for sum. % Use $...$ to go into inline math mode.
+	Then we simply add them by going through the list in a loop while keeping a sum. See algorithm \ref{alg:summation}.
+
+	%Find more on the algorithms package here: http://en.wikibooks.org/wiki/LaTeX/Algorithms
+	%Algorithm is a floating block, as such it does not have to appear in-line with the text.
+	%You can use references to point to floats such as algorithms, or images.
+	\begin{algorithm}
+		\caption{Summation in a list}
+		\label{alg:summation}
+		\begin{algorithmic}
+			\State $L \gets$ input list $e_1,e_2,...,e_n$
+			\State $sum \gets 0$
+			\ForAll{$e \in L$} \Comment{It doesn't matter in which order we sum}
+				\State $sum += e$
+			\EndFor
+			\State \Return $sum$
+		\end{algorithmic}
+	\end{algorithm}
+
+\section{Proofs}
+	We prove that $\sqrt{2}$ is irrational. (With thanks to Wikipedia)
+	\begin{proof}[Proof by contradiction]
+		Assume that $\sqrt{2}$ is rational.\\
+		If it were rational, it could be expressed as a fraction $a/b$ in lowest terms, where a and b are integers, at least one of which is odd. But if $a/b = \sqrt{2}$, then $a^2 = 2b^2$. Therefore $a^2$ must be even. Because the square of an odd number is odd, that in turn implies that a is even. This means that b must be odd because $a/b$ is in lowest terms.
+
+		On the other hand, if a is even, then $a^2$ is a multiple of 4. If $a^2$ is a multiple of 4 and $a^2 = 2b^2$, then $2b^2$ is a multiple of 4, and therefore $b^2$ is even, and so is b.
+
+		So b is odd and even, a contradiction. Therefore the initial assumption—that $\sqrt{2}$ can be expressed as a fraction must be false.
+	\end{proof}
+
+\section{Math and Equations}
+	% See also: http://en.wikibooks.org/wiki/LaTeX/Mathematics
+	For large equations use the equation environment. For multiple lines, you can use the align environment.
+	\begin{align}
+		\sum_{n=0}^{p} 0.5^n &= \frac{1 - 0.5^p}{1 - 0.5}\\
+		12345 + \sum_{n=0}^{\infty} 0.5^n &= 12345 + \frac{1}{1 - 0.5}\\
+		\iint_{\Sigma} \nabla \times \textbf{F} \cdot d \boldsymbol{\Sigma}
+			&= \oint_{\delta \Sigma} \textbf{F} \cdot d\textbf{r} \label{eq:stokes}
+	\end{align}
+
+	It is also possible to reference equations, such as Stokes' theorem in Eq.~\ref{eq:stokes}.
+
+\begin{thebibliography}{9}
+\bibitem{boek}
+J. Kleinberg, \' E. Tardos,
+Algorithm Design,
+Pearson Addison Wesley,
+2006.
+\bibitem{slides}
+\href{https://blackboard.tudelft.nl/webapps/portal/frameset.jsp?tab\_tab\_group\_id=\_10\_1\&url=%2Fwebapps%2Fblackboard%2Fexecute%2Flauncher%3Ftype%3DCourse%26id%3D_45924_1%26url%3D}{Blackboard slides}
+\end{thebibliography}
+\end{document}
