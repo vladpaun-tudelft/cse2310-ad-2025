@@ -1,0 +1,106 @@
+\documentclass[a4paper,11pt]{article}
+
+% Packages
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{enumitem}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+% Optional: nicer section spacing
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.5em}{}
+
+% Document
+\begin{document}
+
+\begin{center}
+    {\Large \textbf{CSE2310 – Greedy Peer Review Task A}}\\[4pt]
+    Student number: \textbf{6152937}
+\end{center}
+
+\vspace{1em}
+
+\section*{Problem Statement}
+We are given tasks $j$ with:
+\[
+p(j,k) = p_j + k \cdot w_j,
+\]
+where $p_j$ is the base time and $w_j$ is the difficulty. The goal is to order all tasks to minimize the total makespan.
+
+\section{Counterexample to “longest job first”}
+Take task $t_1$ with $p_1 = 100$, $w_1 = 1$ and task $t_2$ with $p_2 = 50$, $w_2 = 100$. \\
+If we order the tasks by "longest job first", the order should be $order = (t_1, t_2)$, which results in a total time of $p_{total} = 100 + 0 \cdot 1  + 50 + 1 \cdot 100 = 250$.\\
+Whereas if we use $order = (t_2, t_1)$, we get $p_{total}' = 50 + 0 \cdot 100 + 100 + 1 \cdot 1 = 151$\\
+
+$p_{total} > p_{total}'$, Therefore, "longest job first" is not optimal.
+
+\section{Optimal Ordering of Tasks}
+If we consider the overall sum of times, we notice that $p_i$ is counted exactly once for every task $i$. So irrespective of the order we use, the expression for the total time will always include the term $\sum_{i} p_i$. Ordering by jobs by length will never help in finding an optimal solution, as job length has no effect over the whole sum. As such, we look to the other available variable, which is job weight. Here, order matters, as the later you do a job, the more impact the weight has.
+
+Naturally, we consider doing the jobs with the highest weight first.
+
+We will later show that this order is in fact optimal.
+
+\section{Pseudocode for Optimal Makespan}
+\begin{algorithm}
+\caption{Compute Optimal Makespan}
+\label{alg:optimal_makespan}
+\begin{algorithmic}[1]
+    \State \textbf{input:} list of tasks $t_j$ with $(p_j, w_j)$
+    \State sort tasks by decreasing $w_j$
+    \State makespan $\gets 0$
+    \For {$k = 1$ to $n$}
+        \State task $\gets tasks[k]$
+        \State makespan $\gets $ makespan $+ p_{task} + k \cdot w_{task}$
+    \EndFor
+    \State \Return makespan
+\end{algorithmic}
+\end{algorithm}
+
+\section{Time Complexity}
+Sorting the task list by decreasing order of weight is in $O(n\log{n})$. The loop runs a total of $n$ times and in the loop we do a constant number of operations, so overall it runs in $O(n)$l.\\
+Therefore, the time complexity of Algorithm~\ref{alg:optimal_makespan} is $O(n\log{n})$.
+
+\section{Exchange Argument Proof of Optimality}
+
+\begin{proof}
+    Let $O$ be the schedule produced by the greedy algorithm, which orders tasks in non-increasing order of weight:
+    \[
+    w_{1} \ge w_{2} \ge \dots \ge w_{n}.
+    \]
+    Assume, for the sake of contradiction, that $O$ is not optimal. Let $O'$ be an optimal schedule with minimal disagreement with $O$, i.e., among all optimal schedules, $O'$ matches $O$ in the longest possible prefix.\\
+    Since $O'$ differs from $O$, let $k$ be the first position where they differ. Then $O'$ places task $i$ at position $k$, while the greedy solution places some task $j$ at position $k$, where $w_j > w_i$ (because $j$ is heavier and greedy would have placed the heavier one earlier).\\
+    Since $i$ appears at position $k$ and $j$ must appear later in $O'$, let their positions be:
+    \[
+    \text{pos}(i) = k, \qquad \text{pos}(j) = \ell \quad \text{with } k < \ell.
+    \]
+    Consider only the contribution of tasks $i$ and $j$ to the makespan of $O'$:
+    \[
+    C = p_i + k w_i + p_j + \ell w_j.
+    \]
+    Now construct $O''$ by swapping $i$ and $j$ in $O'$. In $O''$ their contribution becomes:
+    \[
+    C' = p_j + k w_j + p_i + \ell w_i.
+    \]
+    We compute the difference:
+    \begin{align*}
+    C - C' &= (p_i + k w_i + p_j + \ell w_j)
+            - (p_j + k w_j + p_i + \ell w_i) \\
+    &= k(w_i - w_j) + \ell(w_j - w_i) \\
+    &= (w_j - w_i)(\ell - k).
+    \end{align*}
+    Because $w_j > w_i$ and $\ell > k$, we have:
+    \[
+    (w_j - w_i)(\ell - k) > 0,
+    \]
+    so $C > C'$. Therefore swapping $i$ and $j$ strictly decreases the makespan.\\
+    But $O'$ was chosen as an optimal schedule with minimal disagreement with $O$. The swap both:\\
+    1. Improves the makespan (contradicting optimality), and\\
+    2. Moves task $j$ into position $k$, increasing the prefix that matches $O$ (contradicting minimal disagreement).\\
+    Thus, no such $O'$ can exist, and the greedy schedule $O$ must be optimal.
+\end{proof}
+
+
+\end{document}
