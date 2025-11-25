@@ -1,0 +1,108 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{enumitem}
+
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\usepackage[english]{babel}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.5em}{}
+
+\begin{document}
+
+\begin{center}
+    {\Large \textbf{CSE2310 - Greedy TA Review - Triathlon}}\\[4pt]
+    Student number: \textbf{6152937}
+\end{center}
+
+\vspace{1em}
+
+\section*{Problem Statement}
+For $n$ contestants $i = 1, 2, \dots , n$ we are given $w_i, b_i, r_i$, which represent their estimated times for completing a swimming, biking and running section of a triathlon. Given that swimming can only be done by one person at a time, and the other two activities can be done in parallel, we are asked to find an optimal order of the contestants' start that minimizes the expected completion time of the event.
+
+\section{Two contestants problem}
+For two contestants, $c_1$ with $w_1 = 6, b_1 = 9, r_1 = 6$ and $c_2$ with $w_2 = 9, b_2 = 4, r_2 = 7$, what is the optimal order and completion time?\\
+If we let them start in the order $(c_1, c_2)$, $c_1$'s completion time is $t_{c_1} = w_1 + b_1 + r_1 = 21$, and $c_2$'s completion time is $t_{c_2} = w_1 + w_2 + b_2 + r_2 = 27$, as he has to wait for the first contestant to finish his swim. Therefore, the overall completion time $t_c = max(t_{c_1}, t_{c_2}) = 27$.\\
+If we let them out in the other possible order $(c_2, c_1)$, following the same math, we get $t_c = 30$, as contestant 1 has to wait for $9$ (minutes) before he can start his stint, which has a total time of $21$.\\
+Therefore, optimal order is $(c_1, c_2)$ with $t_c = 27$.
+
+\section{Greedy Algorithm Pseudocode}
+A greedy algorithm that produces an optimal solution for this problem is:
+\begin{center}
+    \textbf{\textit{Always let the person with the highest $b_i + r_i$ go.}}
+\end{center}
+
+\begin{algorithm}[H]
+\caption{Compute optimal completion time}
+\label{alg:optimal_completion}
+\begin{algorithmic}[1]
+    \State \textbf{input:} list of (expected) $w_i, r_i, b_i$ times \& list of people $people_i$
+    \State sort lists by decreasing $(r_i + b_i)$
+    \State $startOrder \gets \varnothing$
+    \State $swimTime \gets 0$ //cumulative
+    \State $completionTime \gets 0$ //overall max
+    \For{$k = 1$ to $n$}
+        \State $startOrder \gets startOrder \cup people[k]$
+        \State $swimTime \gets swimTime + w[k]$
+        \State $completionTime \gets \max(completionTime, swimTime+b[k]+r[k])$
+    \EndFor
+    \State \Return $(startOrder, completionTime)$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Run Time Analysis}
+Sorting the initial lists takes $O(n\log n)$. Then we run a loop $n$ times. In the loop, we get the next person and their (expected) times by indexing into arrays, which is constant time, and then update our running totals, which is also constant time. So, the loop part is $O(n)$. Therefore, the algorithm altogether is in $O(n\log n)$.
+
+\section{Proof of Optimality}
+Greedy algorithm that produces optimal solution:
+\begin{center}
+    \textbf{\textit{Always let the person with the highest $b_i + r_i$ go.}}
+\end{center}
+We begin by proving the following lemma:
+\begin{lemma}\label{lem:swap}
+    Let $O$ be an optimal schedule that has two people, $i$ and $j$ with the property that $j$ comes exactly after $i$ in the schedule and $(b_j + r_j) > (b_i + r_i)$. We call this property an inversion. There is another schedule $O'$ that has less inversions and is still optimal.
+\end{lemma}
+\begin{proof}
+    We construct $O'$ by switching the positions of people $i$ and $j$ and we show that $O'$ is still optimal.\\
+    So, in $O'$, $i$ comes exactly after $j$ and $(b_j + r_j) > (b_i + r_i)$. Let us denote the position of $i$ in $O$ = position of $j$ in $O'$ $O'$ as $k$. Let us also denote the total swimming time up to position $k$ as $s_k$. Let us now look at the total completion time of people $i$ and $j$ in both schedules $O$ and $O'$:
+    \begin{align*}
+    F_i = s_k + w_i + b_i + r_i; \quad F_j = s_k + w_i + w_j + b_j + r_j\\
+    F'_i = s_k + w_j + w_i + b_i + r_i; \quad F'_j = s_k + w_j +b_j + r_j\\
+    F_{ij} = \max(F_i, F_j); \quad F'_{ij} = \max(F'_i, F'_j)
+    \end{align*}
+    We know that $(b_j + r_j) > (b_i + r_i)$ and $w_j \ge 0$, so $F_j > F_i$, so $F_{ij} = F_j$
+    We now compare $F'_i$ and $F'_j$ to $F_j$.
+    \begin{align*}
+        F'_i = F_j + (b_i + r_i) - (b_j + r_j); \quad F'_j = F_j - w_i\\
+        (b_j + r_j) > (b_i + r_i) \text{ and } w_i \ge 0\\
+        F'_i < F_j; \quad F'_j \leq F_j
+    \end{align*}
+    Therefore, $F'_{ij} \leq F_j$, so $F'_{ij} \leq F_{ij}$. So by swapping, we get a better finishing time in people $i$ and $j$. The swap does not affect people before position $k$, and it doesn't affect people after the swap either, as the total swim time remains the same $s_k + w_i + w_j$. Therefore, the total completion time of $O'$ must be at least as good as that of $O$. Therefore, $O'$ is also optimal.
+\end{proof}
+
+Now that we've shown we can eliminate inversions, we can prove our algorithms optimality:
+
+\begin{proof}
+    By exchange argument.\\
+    Let O be the order produced by the greedy algorithm, which orders people by decreasing value of the sum of (expected) biking time and running time:
+    \[
+    (b_1 + r_1) \ge (b_2 + r_2) \ge \dots \ge (b_n + r_n)
+    \]
+    Assume, for the sake of contradiction, that $O$ is not optimal. Let $O'$ be an optimal schedule with minimal disagreement to $O$. That is, among all optimal schedules, $O'$ matches with $O$ in the longest possible prefix.\\
+    Since $O'$ differs from $O$, let $k$ be the first position where they differ. Then, $O'$ places person $i$ at position $k$, while $O$ places person $j$ at position $k$, where $(b_j + r_j) \ge (b_i + r_i)$ (because greedy puts the people with higher sum of biking and running earlier).\\
+    Therefore in $O'$, $i$ appears at position $k$ and $j$ must appear at a position $l > k$.\\
+    Because greedy schedule places $j$ before $i$, but $O'$ places $i$ before $j$, at some earliest position between them there must be a pair of adjacent people violating the greedy order. That pair is an inversion.
+    By Lemma~\ref{lem:swap}, swapping this pair produces a new schedule $O''$, which is still optimal and has fewer disagreements to $O$.\\
+    This contradicts the choice of $O'$ as an optimal schedule with minimal disagreement to $O$. Therefore, our assumption that $O$ is not optimal must be false, and the greedy schedule $O$ is optimal.
+\end{proof}
+
+\end{document}
