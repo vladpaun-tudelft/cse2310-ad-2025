@@ -31,9 +31,9 @@ For $n$ contestants $i = 1, 2, \dots , n$ we are given $w_i, b_i, r_i$, which re
 
 \section{Two contestants problem}
 For two contestants, $c_1$ with $w_1 = 6, b_1 = 9, r_1 = 6$ and $c_2$ with $w_2 = 9, b_2 = 4, r_2 = 7$, what is the optimal order and completion time?\\
-If we let them start in the order $(c_1, c_2)$, $c_1$'s completion time is $t_{c_1} = w_1 + b_1 + r_1 = 21$, and $c_2$'s completion time is $t_{c_2} = w_1 + w_2 + b_2 + r_2 = 27$, as he has to wait for the first contestant to finish his swim. Therefore, the overall completion time $t_c = max(t_{c_1}, t_{c_2}) = 27$.\\
+If we let them start in the order $(c_1, c_2)$, $c_1$'s completion time is $t_{c_1} = w_1 + b_1 + r_1 = 21$, and $c_2$'s completion time is $t_{c_2} = w_1 + w_2 + b_2 + r_2 = 26$, as he has to wait for the first contestant to finish his swim. Therefore, the overall completion time $t_c = max(t_{c_1}, t_{c_2}) = 26$.\\
 If we let them out in the other possible order $(c_2, c_1)$, following the same math, we get $t_c = 30$, as contestant 1 has to wait for $9$ (minutes) before he can start his stint, which has a total time of $21$.\\
-Therefore, optimal order is $(c_1, c_2)$ with $t_c = 27$.
+Therefore, optimal order is $(c_1, c_2)$ with $t_c = 26$.
 
 \section{Greedy Algorithm Pseudocode}
 A greedy algorithm that produces an optimal solution for this problem is:
