@@ -1,0 +1,104 @@
+\documentclass[a4paper,11pt]{article}
+
+% Packages
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{enumitem}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+% Optional: nicer section spacing
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.5em}{}
+
+% Document
+\begin{document}
+
+	\begin{center}
+		{\Large \textbf{CSE2310 – D\&C Peer Review Task A}}\\[4pt]
+		Student number: \textbf{6152937}
+	\end{center}
+
+	\vspace{1em}
+
+	\section{Molecule comparison}
+	\subsection{Problem Description}
+		Given a list of $n$ objects, devise an algorithm that determines whether there exists a set of $\frac{n}{2}$ objects that are equivalent, using no more that $O(n\log n)$ equivalence comparisons.
+	\subsection{Pseudocode}
+		\begin{algorithm}[H]
+			\caption{Max subset}
+			\begin{algorithmic}[1]
+				\State \textbf{input:} list $S$ of $n$ objects
+				\State \textbf{output:} a pair $(x,c)$, where $x$ is a candidate objects and $c$ is the amount of times it appears in $S$ (or $(none, 0)$ if no candidate)\\
+				\Function{MaxSubset}{$S$}
+				\If{$|S| \le 2$} \Return any element of $S$ and it's count as candidate\EndIf
+				\State split $S$ into $S_1, S_2$ (each of size $\approx n/2$)
+				\State $(x_1, c_1) \gets$ \Call{MaxSubset}{$S_1$}
+				\State $(x_2, c_2) \gets$ \Call{MaxSubset}{$S_2$}
+				\State count how many elements in $S$ are equivalent to $x_1$
+				\State count how many elements in $S$ are equivalent to $x_2$
+				\State \Return $(x,c)$ for the one with larger count
+				\EndFunction\\
+				\Function{Main}{$S$}
+				\State $(x,c) \gets$ \Call{MaxSubset}{$S$}
+				\If{$c > \frac{n}{2}$} \Return true
+				\Else \text{ } \Return false
+				\EndIf
+				\EndFunction
+			\end{algorithmic}
+		\end{algorithm}
+
+		For input size $k$ we do two recursive calls, each on input size $\frac{k}{2}$ and then do $2k$ comparisons. If we denote $C(n)$ to represent the total number of comparisons made by the algorithm, we have the following recurrence relation:
+		\begin{align*}
+			C(n) &= 2C(\frac{n}{2}) + 2n\\
+			C(1) &= 0\\
+			C(2) &= 1
+		\end{align*}
+		This works out (using the master method) to be $C(n)\in \Theta(n\log n)$.
+
+
+	\section{Recurrence relation}
+	\subsection{Short Answer}
+	\begin{center}
+		$T(n) = 3T(\frac{n}{3}) + cn$\\
+		$T(n \leq 3) = c$, for some constant $c > 0$\\
+	\end{center}
+	\subsection{Explanation}
+		We start by looking at the two base cases at the beginning of the algorithm. It can easily be seen that in both base cases, where the size of the input is smaller than $2$, or $3$ respectively, we do a constant amount of work and then return an output of length $1$ and $2$ respectively. This latter fact is important, as the size of the output of a previous iteration will be important in analyzing the work needed in the \textit{"merge"} step.\\
+		We then look at the recursive part of the algorithm. We start by splitting the input $S$ into 3 parts, this can be done in one pass through the set, so the amount of work is in $O(n)$. We continue by, for each subset, recursively calling the method ( hence the $3T(\frac{n}{3})$ ), and then iterating over all members of each output, and doing a constant amount of work for each. Here is where it becomes important to look at the size of the output of our method. So far we've seen that $T(n) = 3T(\frac{n}{3}) + cn + f(n)$, where $f(n)$ denotes the total time we spend iterating over the outputs of all 3 recursive calls.\\
+		It can be shown by induction that the size of the output of a method call is equal to the size of the input.
+		\begin{proof}
+			By Induction\\
+			Base cases:\\
+			Size of input is 1, we return 1 element.\\
+			Size of input is 2, we return 2 elements.\\
+			Inductive step:\\
+			Assume for input size $k$ we return $k$ elements.\\
+			On a call of input size $3k$, we split the set into $3$ subsets of size $k$, and call the method on them; by the $IH$ we know that these calls each return $k$ elements. For each of these $3$ returned sets, we add $k$ elements to the set T, so in total T has $3k$ elements and we return T.\\
+			Therefore, for all input sizes $n$, the method in question returns a set of size $n$.
+		\end{proof}
+		With this in mind, we know each recursive call outputs a set of size $\frac{n}{3}$, so the total size is $n$ and so $f(n) = cn$, for some constant $c >0$. Therefore, overall, $T(n) = 3T(\frac{n}{3}) + cn$.
+
+	\section{Analyzing Recurrence}
+	\subsection{Problem Statement}
+	Given an algorithm with recurrence relation $T(n) = 3T(\frac{n}{5})+n^3$, what is a tight upper bound on the runtime?
+	\subsection{Answer}\label{sub:master_method}
+	We will use the master method. To start, we use the general formula:
+	\begin{align}
+		T(n) = aT(\frac{n}{b}) + f(n)
+	\end{align}
+	In our case, $a=3$, $b=5$, $f(n)=n^3$. The master method has us compare the asymptotic growth of $n^{log_ba}$ and $f(n)$. In our case, $n^{log_ba}=n^{log_53}=n^{0.68}$, which is smaller that $f(n)=n^3$. More rigorously, $f(n) \in \Omega(n^{0.68 + \epsilon})$ for some constant $\epsilon > 0$, which is true for $\epsilon = 0.32$, as $n^3 \in \Omega(n)$. We must also check the regularity condition for $f(n)$, but since it's a polynomial this is trivial. Therefore, our equation satisfies case 3 of the master method, so $T(n) \in \Theta (f(n))$. $T(n) \in \Theta (n^3).$
+
+	\section{Runtime analysis}
+	\subsection{Problem Statement}
+	Given an algorithm that uses $O(1)$ operations and one recursive call with an argument of size $\frac{n}{3}$, give a tight upper bound on it's runtime.
+	\subsection{Answer}
+	We start by writing down a recurrence relation for this algorithm.
+	\begin{align*}
+		T(n) &= T(\frac{n}{3}) + f(n) \text{, where } f(n) \in O(1)\\
+		T(n) &= T(\frac{n}{3}) + c \text{, for some constant } c > 0\\
+		T(n \leq 2) &\in O(1) \text{ (assuming from context)}
+	\end{align*}
+	Again, we can use the master method outlined in subsection~\ref{sub:master_method}, but this time with $a=1$, $b=3$, $f(n) = c$. We have $n^{log_ba} = n^{log_31} = n^0 = 1$. $f(n) \in \Theta(1) = \Theta(n^{log_ba})$. Therefore, we are in case 2 of the master method, so $T(n)\in\Theta(n^{log_ba}\log n) = \Theta(\log n)$.
+\end{document}
