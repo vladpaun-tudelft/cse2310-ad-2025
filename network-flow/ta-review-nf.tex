@@ -1,0 +1,66 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{enumitem}
+
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\usepackage[english]{babel}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.5em}{}
+
+\begin{document}
+
+	\begin{center}
+		{\Large \textbf{CSE2310 - Network Flow TA Review - Task 3A.2}}\\[4pt]
+		Student number: \textbf{6152937}
+	\end{center}
+
+	\vspace{1em}
+
+	\section*{Problem Statement}
+	Given $n$ students, each with a set of contexts $pref_i$, that they like, and $m$ contexts, each with $p_j$ capacity, how do we match students to contexts, such that each student receives a context they like?
+
+	\section{Problem Modeling}
+	We can model this problem as a variation of the Bipartite Matching Problem, which can in turn be solved using Ford-Faulkerson.\\
+	Therefore, we create a graph $G=\{V,E\}$ with nodes:
+	\begin{itemize}
+		\item Nodes $source$ and $sink$
+		\item A node for every student $i$
+		\item A node for every context $j$
+	\end{itemize}
+	Edges:
+	\begin{itemize}
+		\item $(source, i)$ with capacity $1$ for every student $i$
+		\item $(j, sink)$ with capacity $p_j$ for every context $j$
+		\item $(i,j)$ with capacity $1$ if context $j\in pref_i$
+	\end{itemize}
+
+
+	\section{Explanation of feasibility}
+	With this modeling of the problem, we can run the Ford-Faulkerson algorithm to get the max-flow value. Every student will be matched with a context iff this value is equal to $n$.
+
+	\section{Explanation of allocation}
+	To get the allocation from the max-flow you would do the next steps:
+	\begin{itemize}
+		\item Compute the maximum flow for our network
+		\item For each student node $i$, look at the outgoing edges $(i,j)$
+		\item If an edge $(i,j)$ has flow $1$, student $i$ is assigned to context $j$
+		\item Since $(source, i)$ has capacity of 1, there can only be one such outgoing edge from $i$
+	\end{itemize}
+
+	This allocation respects all the constraints, as the edges from the source to a student node has a capacity of 1, thus ensuring that every student is allocated to at most one context. The edges from a context to the sink being the capacity of that context ensure that no context can have more students allocated to it than it s capacity. And adding edges between student and context, only if they like that context ensures that we never match a student to contexts they don't like
+
+	\section{Problem extension}
+	If the students instead of a set of preferences, they give a ranking of the m different contexts, we can still model this as a Network Flow problem. We keep the construction exactly as before, but we also add cost to the edges $(i,j)$ equal to the rank of that preference. And then use a min-cost algorithm to solve the graph. Type shit.
+
+
+\end{document}
