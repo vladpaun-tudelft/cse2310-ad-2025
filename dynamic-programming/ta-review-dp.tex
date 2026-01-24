@@ -29,10 +29,114 @@
 	\section*{Problem Statement}
 	Given a list of words $W$ and a maximum line length $L$, find the minimum total sum of squares of the slacks of all lines.
 
-	\section{Part 1}
+	\section{Question 1}
 
-	\section{Part 2}
-	\section{Part 3}
-	\section{Part 4}
-	\section{Part 5}
+	\begin{algorithm}[H]
+		\caption{Compute slack values $S_{i,j}$}
+		\label{alg:compute_slack}
+		\begin{algorithmic}[1]
+			\State \textbf{input:} word lengths $c[1 \dots n]$, maximum line length $L$
+			\State \textbf{output:} slack table $S[1 \dots n][1 \dots n]$
+
+			\For{$i = 1$ to $n$}
+			\State $lineLength \gets 0$
+			\For{$j = i$ to $n$}
+			\If{$j = i$}
+			\State $lineLength \gets c[j]$
+			\Else
+			\State $lineLength \gets lineLength + 1 + c[j]$ \Comment{add space + word}
+			\EndIf
+
+			\If{$lineLength > L$}
+			\State $S[i][j] \gets \infty$
+			\Else
+			\State $S[i][j] \gets L - lineLength$
+			\EndIf
+			\EndFor
+			\EndFor
+
+			\State \Return $S$
+		\end{algorithmic}
+	\end{algorithm}
+
+	\section{Question 2}
+	Let $\mathrm{OPT}(j)$ denote the minimum total sum of squared slacks for an optimal partitioning of the words
+	$w_1, \dots, w_j$ into valid lines. The problem exhibits optimal substructure: if the last line contains words
+	$w_i, \dots, w_j$ for some $1 \le i \le j$, then the total cost consists of the squared slack of this last line,
+	$S_{i,j}^2$, plus the optimal cost for the preceding words $w_1, \dots, w_{i-1}$.\\
+	This yields the following recurrence:
+	\[
+	\mathrm{OPT}(j)
+	=
+	\min_{1 \le i \le j}
+	\left(
+	\mathrm{OPT}(i-1) + S_{i,j}^2
+	\right),
+	\text{with base case $\mathrm{OPT}(0) = 0$.}
+	\]
+	The optimal value for formatting the entire text is given by $\mathrm{OPT}(n)$.
+	\section{Question 3}
+
+	\begin{algorithm}[H]
+		\caption{Compute optimal sum of squared slacks}
+		\label{alg:pretty_print_dp}
+		\begin{algorithmic}[1]
+			\State \textbf{input:} slack table $S[1 \dots n][1 \dots n]$
+			\State \textbf{output:} $\mathrm{OPT}(n)$
+
+			\State $\text{mem}[0] \gets 0$
+
+			\For{$j = 1$ to $n$}
+			\State $\text{mem}[j] \gets S_{1,j}^2$
+			\For{$i = 2$ to $j$}
+			\If{$\text{mem}[i-1] + S_{i,j}^2 < \text{mem}[j]$}
+			\State $\text{mem}[j] \gets \text{mem}[i-1] + S_{i,j}^2$
+			\EndIf
+			\EndFor
+			\EndFor
+
+			\State \Return $\text{mem}[n]$
+		\end{algorithmic}
+	\end{algorithm}
+
+	\section{Question 4}
+	The computation of the slack table $S_{i,j}$ requires two nested loops, where the outer loop iterates over
+	$i = 1$ to $n$ and the inner loop iterates over $j = i$ to $n$. Each iteration performs only constant-time
+	operations. Therefore, the total running time of the algorithm in Subquestion~1 is $O(n^2)$.
+
+	The dynamic programming algorithm in Subquestion~3 also consists of two nested loops. The outer loop
+	iterates over $j = 1$ to $n$, and for each $j$ the inner loop iterates over $i = 1$ to $j$. Each iteration again
+	takes constant time, resulting in a running time of $O(n^2)$.
+
+	Since the two algorithms are executed sequentially, the total running time of the combined approach is
+	$O(n^2)$, which is the tightest upper bound.
+
+	\section{Question 5}
+
+	\begin{algorithm}[H]
+		\caption{Pretty-print by reconstructing from $\text{mem}$ and $S$}
+		\label{alg:pretty_print_reconstruct_scan}
+		\begin{algorithmic}[1]
+			\State \textbf{input:} words $W = (w_1,\dots,w_n)$, $\text{mem}[0\dots n]$, slack table $S[1\dots n][1\dots n]$
+			\State \textbf{output:} printed text using \texttt{print-line}
+
+			\State $lines \gets$ empty stack \Comment{stores pairs $(i,j)$}
+			\State $j \gets n$
+			\While{$j > 0$}
+			\For{$i = 1$ to $j$}
+			\If{$\text{mem}[j] = \text{mem}[i-1] + S_{i,j}^2$}
+			\State push $(i,j)$ onto $lines$
+			\State $j \gets i-1$
+			\State \textbf{break}
+			\EndIf
+			\EndFor
+			\EndWhile
+
+			\While{$lines$ not empty}
+			\State $(i,j) \gets$ pop from $lines$
+			\State \texttt{print-line}$(w_i,\dots,w_j)$
+			\EndWhile
+		\end{algorithmic}
+	\end{algorithm}
+
 \end{document}
