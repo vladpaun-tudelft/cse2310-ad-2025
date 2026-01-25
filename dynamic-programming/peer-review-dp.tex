@@ -1,0 +1,163 @@
+\documentclass[a4paper,11pt]{article}
+
+% Packages
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{enumitem}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+% Optional: nicer section spacing
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.5em}{}
+
+\begin{document}
+
+	\begin{center}
+		{\Large \textbf{CSE2310 Dynamic Programming Peer Review Task a}}\\[4pt]
+		Student number: \textbf{6152937}
+	\end{center}
+
+	\vspace{1em}
+
+	\section{Rhoda's luggage problem}
+
+	\subsection{Problem statement}
+	We have $n$ souvenirs. Item $i$ has volume $l_i$ (liters), liquid amount $k_i$ (liters), and value $v_i$ (euros).
+	The suitcase has capacity $L$ liters. Up to $K$ liters of liquid are free. If total liquid is $q$, then the extra cost is
+	\[
+	\mathrm{cost}(q) = c \cdot \max\Bigl(0,\Bigl\lceil \tfrac{q}{K}\Bigr\rceil - 1\Bigr).
+	\]
+	The goal is to maximize net value: total value minus $\mathrm{cost}(\text{total liquid})$. \ \ :contentReference[oaicite:0]{index=0}
+
+	\subsection{1. Small instance with $n=3$ and solution}
+	Let $L=6$, $K=3$, $c=5$, and the three items be:
+	\[
+	\begin{array}{c|ccc}
+		i & l_i & k_i & v_i\\ \hline
+		1 & 3 & 3 & 12\\
+		2 & 3 & 2 & 10\\
+		3 & 2 & 0 & 4
+	\end{array}
+	\]
+	Enumerate feasible subsets (volume at most $6$):
+
+	\begin{itemize}[leftmargin=2em]
+		\item $\{1\}$: volume $3$, liquid $3$, value $12$, cost $0$, net $12$.
+		\item $\{2\}$: volume $3$, liquid $2$, value $10$, cost $0$, net $10$.
+		\item $\{3\}$: volume $2$, liquid $0$, value $4$, cost $0$, net $4$.
+		\item $\{1,2\}$: volume $6$, liquid $5$, value $22$.
+		Here $\lceil 5/3\rceil = 2$, so cost $= (2-1)c = 5$. Net $=22-5=17$.
+		\item $\{1,3\}$: volume $5$, liquid $3$, value $16$, cost $0$, net $16$.
+		\item $\{2,3\}$: volume $5$, liquid $2$, value $14$, cost $0$, net $14$.
+		\item $\{1,2,3\}$: volume $8$ exceeds $L$, infeasible.
+	\end{itemize}
+
+	Optimal is $\{1,2\}$ with net value $17$. It is optimal to buy extra liquid allowance (one extra block of $K$ liters).
+
+	\subsection{2. If $k_i=0$ for all items}
+	If $k_i=0$ for all $i$, then total liquid is always $0$, so $\mathrm{cost}(0)=0$ and the problem becomes the classic $0$-$1$ knapsack:
+	maximize $\sum v_i$ subject to $\sum l_i \le L$. \ \ :contentReference[oaicite:1]{index=1}
+
+	\subsection{3. Example where buying extra liquid is optimal, and where it is not}
+	\paragraph{Buying extra liquid is optimal.}
+	The instance from Question 1 is such an example: choosing $\{1,2\}$ forces liquid $5>K$, costs $5$, and still beats any solution without buying (net $17$ vs best without buying net $16$). \ \ :contentReference[oaicite:2]{index=2}
+
+	\paragraph{Buying extra liquid is not optimal.}
+	Let $L=6$, $K=3$, $c=20$, and:
+	\[
+	\begin{array}{c|ccc}
+		i & l_i & k_i & v_i\\ \hline
+		1 & 3 & 3 & 12\\
+		2 & 3 & 2 & 10\\
+		3 & 3 & 3 & 11
+	\end{array}
+	\]
+	Feasible options:
+	\begin{itemize}[leftmargin=2em]
+		\item Without buying, best is $\{1\}$ with net $12$ (or $\{3\}$ with net $11$).
+		\item If we buy extra liquid: $\{1,2\}$ has liquid $5$, so $\lceil 5/3\rceil=2$ and cost $20$, net $22-20=2$.
+		Also $\{1,3\}$ has liquid $6$, $\lceil 6/3\rceil=2$, cost $20$, net $23-20=3$.
+	\end{itemize}
+	So it is not optimal to buy extra liquid. \ \ :contentReference[oaicite:3]{index=3}
+
+	\subsection{4. Recursive function (math notation) for the maximum net value}
+	Define a helper DP that ignores the step cost until the end:
+
+	Let $V(i,\ell,q)$ be the maximum total value achievable using only items $\{1,\dots,i\}$ with
+	total volume at most $\ell$ and total liquid exactly $q$.
+	If impossible, $V(i,\ell,q)=-\infty$.
+
+	Base:
+	\[
+	V(0,\ell,0)=0 \ \text{for all } \ell \in \{0,\dots,L\},\qquad
+	V(0,\ell,q)=-\infty \ \text{for } q>0.
+	\]
+
+	Recurrence for $i\ge 1$:
+	\[
+	V(i,\ell,q) =
+	\max\Bigl(
+	V(i-1,\ell,q), \;
+	v_i + V(i-1,\ell-l_i,q-k_i)
+	\Bigr),
+	\]
+	where the second term is only allowed if $\ell\ge l_i$ and $q\ge k_i$.
+
+	Given $V$, the maximum net value is:
+	\[
+	\mathrm{OPT}(n,L)=
+	\max_{\ell \in \{0,\dots,L\}}
+	\max_{q \in \{0,\dots,Q\}}
+	\Bigl(
+	V(n,\ell,q) - c\cdot \max(0,\lceil q/K\rceil - 1)
+	\Bigr),
+	\]
+	where $Q=\sum_{i=1}^n k_i$ (and $Q \le nK$ since $k_i \le K$).
+
+	We call $\mathrm{OPT}(n,L)$ to obtain the optimal net value for the full instance. \ \ :contentReference[oaicite:4]{index=4}
+
+	\subsection{5. Efficient iterative DP algorithm (pseudocode)}
+	\begin{algorithm}[H]
+		\caption{Maximum net value with liquid cost blocks}
+		\begin{algorithmic}[1]
+			\State \textbf{input:} $n,L,K,c$ and arrays $(l_i,k_i,v_i)$ for $i=1..n$
+			\State \textbf{output:} maximum net value
+			\State $Q \gets \sum_{i=1}^n k_i$
+			\State Create array $dp[0..L][0..Q]$ and fill with $-\infty$
+			\State $dp[0][0] \gets 0$
+			\For{$i \gets 1$ to $n$}
+			\State Create array $ndp \gets dp$ \Comment{not taking item $i$}
+			\For{$\ell \gets 0$ to $L$}
+			\For{$q \gets 0$ to $Q$}
+			\If{$dp[\ell][q] > -\infty$}
+			\If{$\ell + l_i \le L$ \textbf{and} $q + k_i \le Q$}
+			\State $ndp[\ell + l_i][q + k_i] \gets \max(ndp[\ell + l_i][q + k_i],\ dp[\ell][q] + v_i)$
+			\EndIf
+			\EndIf
+			\EndFor
+			\EndFor
+			\State $dp \gets ndp$
+			\EndFor
+			\State $best \gets -\infty$
+			\For{$\ell \gets 0$ to $L$}
+			\For{$q \gets 0$ to $Q$}
+			\If{$dp[\ell][q] > -\infty$}
+			\State $blocks \gets \left\lceil \frac{q}{K} \right\rceil$ \Comment{$blocks=0$ when $q=0$}
+			\State $extra \gets \max(0, blocks - 1)$
+			\State $best \gets \max(best,\ dp[\ell][q] - extra \cdot c)$
+			\EndIf
+			\EndFor
+			\EndFor
+			\State \Return $best$
+		\end{algorithmic}
+	\end{algorithm}
+
+	\subsection{6. Time complexity}
+	Let $Q=\sum_{i=1}^n k_i$ (so $Q \le nK$). The DP fills $n$ stages, each iterating over all $(\ell,q)$ pairs.
+	Thus time complexity is $O(n\cdot L \cdot Q)$ and space complexity is $O(L\cdot Q)$.
+
+	Using $Q \le nK$, a valid upper bound is $O(n^2 L K)$. \ \ :contentReference[oaicite:5]{index=5}
+
+\end{document}
